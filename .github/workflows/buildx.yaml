@@ -35,7 +35,7 @@ jobs:
             --platform linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x \
             --output "type=image,push=false" \
             --tag inductor/falco:latest \
-            --file docker/falco/Dockerfile ./
+            docker/falco
       -
         name: Login to DockerHub
         uses: docker/login-action@v1
@@ -51,7 +51,7 @@ jobs:
             --platform linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/s390x \
             --output "type=image,push=true" \
             --tag inductor/falco:latest \
-            --file docker/falco/Dockerfile ./
+            docker/falco
       -
         name: Inspect image
         run: |
