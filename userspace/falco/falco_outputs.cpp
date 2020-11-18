@@ -52,7 +52,6 @@ falco_outputs::~falco_outputs()
 {
 	if(m_initialized)
 	{
-		this->cleanup_outputs();
 		this->stop_worker();
 		if(m_worker_thread.joinable())
 		{
@@ -276,6 +275,7 @@ void falco_outputs::reopen_outputs()
 
 void falco_outputs::stop_worker()
 {
+	m_queue.clear();
 	this->push(falco_outputs::ctrl_msg_type::CTRL_MSG_STOP);
 }
 
@@ -296,13 +296,10 @@ void falco_outputs::worker()
 	auto timeout = m_timeout;
 
 	falco_outputs::ctrl_msg cmsg;
-	while(true)
+	do
 	{
 		// Block until a message becomes available.
 		m_queue.pop(cmsg);
-
-		if (cmsg.type == ctrl_msg_type::CTRL_MSG_STOP)
-			return;
 
 		for(auto it = m_outputs.cbegin(); it != m_outputs.cend(); ++it)
 		{
@@ -312,13 +309,14 @@ void falco_outputs::worker()
 				switch(cmsg.type)
 				{
 					case ctrl_msg_type::CTRL_MSG_OUTPUT:
-							(*it)->output(&cmsg);
+						(*it)->output(&cmsg);
 						break;
 					case ctrl_msg_type::CTRL_MSG_CLEANUP:
-							(*it)->cleanup();
+					case ctrl_msg_type::CTRL_MSG_STOP:
+						(*it)->cleanup();
 						break;
 					case ctrl_msg_type::CTRL_MSG_REOPEN:
-							(*it)->reopen();
+						(*it)->reopen();
 						break;
 					default:
 						falco_logger::log(LOG_DEBUG, "Outputs worker received an unknown message type\n");	
@@ -330,5 +328,5 @@ void falco_outputs::worker()
 			}
 		}
 		wd.cancel_timeout();
-	}
+	} while(cmsg.type != ctrl_msg_type::CTRL_MSG_STOP);
 }

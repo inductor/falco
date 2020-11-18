@@ -693,6 +693,7 @@ trace_files: !mux
       - rules/single_rule.yaml
     conf_file: confs/program_output.yaml
     trace_file: trace_files/cat_write.scap
+    run_duration: 1
     time_iso_8601: true
     output_strictly_contains:
       - /tmp/falco_outputs/program_output.txt: output_files/single_rule_with_cat_write.txt
